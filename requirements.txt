@@ -1,0 +1,29 @@
+# Core dependencies
+torch>=2.0.0
+torchvision>=0.15.0
+open-clip-torch>=2.20.0
+timm>=0.9.0
+
+# Data and preprocessing
+numpy>=1.24.0
+Pillow>=9.5.0
+webdataset>=0.2.0
+
+# Training utilities
+tensorboard>=2.13.0
+wandb>=0.15.0
+tqdm>=4.65.0
+pyyaml>=6.0
+
+# Evaluation and analysis
+fvcore>=0.1.5.post20221221
+scipy>=1.10.0
+matplotlib>=3.7.0
+pandas>=2.0.0
+
+# Development and testing
+pytest>=7.3.0
+pytest-cov>=4.1.0
+black>=23.3.0
+flake8>=6.0.0
+isort>=5.12.0

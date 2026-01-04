@@ -1,0 +1,99 @@
+# COCO configuration for ICAR training and evaluation
+
+model:
+  # Base CLIP model
+  clip_model_name: "ViT-L-14"
+  pretrained: "laion2b_s32b_b82k"
+  
+  # Early exit configuration
+  early_exit_layer: 12  # Exit at layer 12 of 24
+  
+  # Architecture details (for ViT-L/14)
+  hidden_dim: 1024
+  output_dim: 768
+  num_blocks: 24
+  
+  # Image Complexity Classifier
+  icc_checkpoint: "./data/ICC.pt"  # Path to ICC checkpoint
+  icc_threshold: 0.5    # Threshold for complexity classification
+
+training:
+  # Optimizer settings
+  optimizer: "AdamW"
+  weight_decay: 0.01
+  
+  # Learning rates (differential)
+  lr_backbone: 0.000001      # CLIP backbone (1e-6)
+  lr_early_proj: 0.0001      # Early exit projection (1e-4)
+  lr_temperature: 0.001      # Temperature parameters (1e-3)
+  
+  # Training hyperparameters
+  batch_size: 128         # Per GPU (reduced for single GPU training)
+  num_epochs: 10
+  gradient_clip_val: 1.0 # Gradient clipping
+  
+  # Loss configuration
+  loss_alpha: 0.5        # Weight for early exit loss (0.5 = equal weighting)
+  
+  # Scheduler
+  scheduler: "cosine"
+  warmup_steps: 1000
+  
+  # Precision
+  precision: "amp"       # Use AMP by default for efficiency
+  
+  # Checkpointing
+  save_every_n_epochs: 1
+  checkpoint_dir: "checkpoints/"
+
+data:
+  # Dataset configuration
+  dataset_name: "mscoco"
+  data_root: "/path/to/coco-images"  # Path to COCO dataset
+  
+  # Preprocessing
+  image_size: 224
+  # Note: Dual normalization is handled by the model
+  # CLIP uses mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]
+  # ICC uses ImageNet normalization
+  # Dataset provides base-preprocessed images (no normalization)
+  
+  # Data loading
+  num_workers: 4
+  pin_memory: true
+  prefetch_factor: 2
+
+evaluation:
+  # Retrieval evaluation
+  retrieval_metrics: ["R@1", "R@5", "R@10"]
+  
+  # Efficiency analysis
+  measure_flops: true
+  measure_latency: true
+  
+  # Evaluation datasets
+  eval_datasets: ["mscoco_5k", "coyo_subset"]
+  
+  # Batch size for evaluation (can be larger than training)
+  eval_batch_size: 512
+
+logging:
+  # Experiment tracking
+  use_wandb: false
+  wandb_project: "icar"
+  wandb_entity: null
+  
+  # TensorBoard
+  use_tensorboard: true
+  log_dir: "logs/"
+  
+  # Logging frequency
+  log_every_n_steps: 50
+  
+# Random seed for reproducibility
+seed: 42
+
+# Device configuration
+device: "cuda"
+cuda_id: 0  # Default GPU for single-GPU training
+cuda_devices: [0, 1]  # GPUs to use for multi-GPU training (used by DDP)

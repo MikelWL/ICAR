@@ -1,0 +1,30 @@
+# Flickr30k-specific configuration
+# This overrides values from coco.yaml when used with --model-config
+
+data:
+  # Dataset configuration
+  dataset_name: "flickr30k"
+  data_root: "/path/to/flickr30k"  # Update this path
+  
+  # Image preprocessing
+  image_size: 224  # Same as COCO for consistency
+  
+  # Data loading parameters (same as COCO config)
+  num_workers: 4
+  pin_memory: true
+  prefetch_factor: 2
+  
+  # Flickr30k has fewer samples, so we might want different batch sizes
+  # Flickr30k: ~29k train, ~1k val, ~1k test
+  # MS-COCO: ~113k train, ~5k val, ~5k test
+
+training:
+  # Smaller dataset, so we might want more epochs
+  num_epochs: 10
+  
+  # Could use larger batch size since dataset is smaller
+  batch_size: 128  # Same as COCO for consistency
+
+evaluation:
+  # Smaller validation set means faster evaluation
+  eval_batch_size: 512

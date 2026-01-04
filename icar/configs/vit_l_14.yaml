@@ -1,0 +1,17 @@
+# ViT-L/14 specific configuration
+# Inherits from coco.yaml and overrides model-specific parameters
+
+# This file only contains overrides - all other values come from coco.yaml
+model:
+  # Confirm architecture specifics for ViT-L/14
+  hidden_dim: 1024      # Transformer width
+  output_dim: 768       # Output embedding dimension  
+  num_blocks: 24        # Number of transformer blocks
+  patch_size: 14        # Vision transformer patch size
+  
+  # Model checkpoint
+  clip_model_name: "ViT-L-14"
+  pretrained: "laion2b_s32b_b82k"  # 75.3% zero-shot ImageNet accuracy
+  
+  # Early exit at middle layer
+  early_exit_layer: 12  # Exit at block 12 of 24 (~50% compute)
