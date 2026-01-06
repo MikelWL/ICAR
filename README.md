@@ -15,19 +15,11 @@ ICAR implements adaptive routing for image-text retrieval using an image complex
 The main evaluation setting reported in the paper uses COCO/Flickr test sets with 100k LAION-COCO
 distractors in the retrieval set.
 
-## Release Status
+## Status
 
-- Paper accepted at ECIR 2026 (December 2025)
-- Repository initialized (December 2025)
-- Initial implementation released (January 2026)
-- Weights (ICAR and ICC) released (January 2026)
-- Data artifacts and data setup instructions released (January 2026)
-
-## Release Checklist
-
-(Before the March 2026 ECIR conference)
-
-- ICC-specific implementation release
+- Code, weights, and data artifacts are released for reproducibility.
+- See `docs/DATA.md` for dataset setup (COCO/Flickr + LAION distractors), and `docs/ICC.md` / `docs/IC9600_BENCMARK.md` for ICC reproducibility and validation.
+- If you run into issues, please open a GitHub issue with your environment details and command line.
 
 ## Setup
 
