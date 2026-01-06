@@ -49,7 +49,12 @@ Place checkpoints under:
 checkpoints/
 ```
 
-Planned: download links + checksums will be provided here.
+Weights are hosted on Hugging Face:
+
+- ICAR weights: https://huggingface.co/MikelWL/icar-weights
+- ICC weights: https://huggingface.co/MikelWL/icc-weights
+
+Checksums are provided in each HF repo (`SHA256SUMS`).
 
 ## Reference Scripts
 
