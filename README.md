@@ -78,6 +78,17 @@ icar/
 scripts/            # Main scripts for training and evaluation
 ```
 
+## Licensing and Upstream Models
+
+- Code in this repo is licensed under Apache 2.0 (see `LICENSE`).
+- Weights are released separately and follow their upstream licenses:
+  - ICAR weights (OpenCLIP ViT-L-14) inherit the OpenCLIP MIT license.
+  - ICC weights (ConvNeXt V2) are CC-BY-NC due to ImageNet-pretrained weights.
+
+Upstream repositories:
+- OpenCLIP: https://github.com/mlfoundations/open_clip
+- ConvNeXt V2: https://github.com/facebookresearch/ConvNeXt-V2
+
 ## Citation
 
 ```bibtex
@@ -86,5 +97,42 @@ scripts/            # Main scripts for training and evaluation
   author={Williams-Lekuona, Mikel and Cosma, Georgina},
   journal={arXiv preprint arXiv:2512.15372},
   year={2025}
+}
+```
+
+If you use the pretrained backbones, please also cite:
+
+```bibtex
+@software{ilharco_gabriel_2021_5143773,
+  author       = {Ilharco, Gabriel and
+                  Wortsman, Mitchell and
+                  Wightman, Ross and
+                  Gordon, Cade and
+                  Carlini, Nicholas and
+                  Taori, Rohan and
+                  Dave, Achal and
+                  Shankar, Vaishaal and
+                  Namkoong, Hongseok and
+                  Miller, John and
+                  Hajishirzi, Hannaneh and
+                  Farhadi, Ali and
+                  Schmidt, Ludwig},
+  title        = {OpenCLIP},
+  month        = jul,
+  year         = 2021,
+  note         = {If you use this software, please cite it as below.},
+  publisher    = {Zenodo},
+  version      = {0.1},
+  doi          = {10.5281/zenodo.5143773},
+  url          = {https://doi.org/10.5281/zenodo.5143773}
+}
+```
+
+```bibtex
+@article{Woo2023ConvNeXtV2,
+  title={ConvNeXt V2: Co-designing and Scaling ConvNets with Masked Autoencoders},
+  author={Sanghyun Woo and Shoubhik Debnath and Ronghang Hu and Xinlei Chen and Zhuang Liu and In So Kweon and Saining Xie},
+  year={2023},
+  journal={arXiv preprint arXiv:2301.00808},
 }
 ```
