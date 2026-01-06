@@ -64,6 +64,13 @@ Weights are hosted on Hugging Face:
 
 Checksums are provided in each HF repo (`SHA256SUMS`).
 
+## ICC and IC9600
+
+ICAR relies on a fine-tuned **Image Complexity Classifier (ICC)** checkpoint (`ICC.pt`) for complexity-aware routing. We provide the released `ICC.pt` in the ICC weights repo above, and also include the full ICC training/export code in this repository for reproducibility.
+
+- ICC training/export docs: `docs/ICC.md`
+- IC9600 benchmark (standard image complexity validation): `docs/IC9600_BENCMARK.md`
+
 ## Reference Scripts
 
 These scripts are the primary entrypoints for training and evaluation. Use them as-is, or open them

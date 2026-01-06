@@ -34,6 +34,7 @@ checkpoints/
 embeds/
 results/
 logs/
+runs/
 
 # Datasets and weights (local only)
 data/
