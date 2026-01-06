@@ -20,13 +20,14 @@ distractors in the retrieval set.
 - Paper accepted at ECIR 2026 (December 2025)
 - Repository initialized (December 2025)
 - Initial implementation released (January 2026)
-- Final release (weights + data guidance) planned before ECIR 2026
+- Weights (ICAR and ICC) released (January 2026)
+- Data artifacts and data setup instructions released (January 2026)
 
 ## Release Checklist
 
-- ICAR and ICC pretrained weights release
+(Before the March 2026 ECIR conference)
+
 - ICC-specific implementation release
-- Data download instructions
 
 ## Setup
 
