@@ -66,6 +66,26 @@ The ICAR mixed evaluation uses **100,000 LAION-COCO distractors**. We publish:
 
 Download the images using `img2dataset` from the manifest. Some URLs will fail; that’s expected.
 
+- img2dataset repo: `https://github.com/rom1504/img2dataset`
+
+#### Suggested img2dataset command
+
+Create an environment with `img2dataset` following the upstream instructions, then run:
+```
+img2dataset \
+  --url_list data/laion_coco_100k/laion_coco_100k_manifest.tsv \
+  --input_format tsv \
+  --url_col url \
+  --caption_col caption \
+  --output_folder /path/to/img2dataset_laion_coco_100k \
+  --output_format files \
+  --processes_count 8 \
+  --thread_count 32 \
+  --number_sample_per_shard 10000
+```
+
+`output_format=files` is recommended here because ICAR’s post-processing expects per-sample image files and per-sample metadata JSON sidecars on disk.
+
 #### Validate (pre-flight)
 
 After downloading, run:
