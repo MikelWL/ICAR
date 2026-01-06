@@ -41,6 +41,47 @@ Update dataset paths in:
 - `icar/configs/coco.yaml`
 - `icar/configs/flickr30k.yaml`
 
+## Data
+
+ICAR uses the standard Karpathy splits for COCO and Flickr30k. Download the
+images from the official sources and the Karpathy split annotations from:
+
+- Karpathy splits: https://cs.stanford.edu/people/karpathy/deepimagesent/caption_datasets.zip
+
+### COCO Retrieval Setup
+
+1) Download COCO 2014 images:
+   - train2014: http://images.cocodataset.org/zips/train2014.zip
+   - val2014: http://images.cocodataset.org/zips/val2014.zip
+2) Download and extract `caption_datasets.zip` from the Karpathy link above.
+3) Organize the dataset as:
+
+```
+/path/to/coco-images/
+  train2014/
+    COCO_train2014_000000000009.jpg
+    ...
+  val2014/
+    COCO_val2014_000000000042.jpg
+    ...
+  dataset_coco.json
+```
+
+### Flickr30k Retrieval Setup
+
+1) Request and download Flickr30k images:
+   - https://forms.illinois.edu/sec/229675
+2) Download and extract `caption_datasets.zip` from the Karpathy link above.
+3) Organize the dataset as:
+
+```
+/path/to/flickr30k/
+  flickr30k-images/
+    2923475135.jpg
+    ...
+  dataset_flickr30k.json
+```
+
 ## Weights
 
 Place checkpoints under:
