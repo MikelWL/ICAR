@@ -13,7 +13,9 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 COCO_ROOT=${COCO_ROOT:-"/path/to/coco-images"}
 FLICKR_ROOT=${FLICKR_ROOT:-"/path/to/flickr30k"}
 LAION_ROOT=${LAION_ROOT:-"${BASE_DIR}/data/laion_coco_100k"}
-COMPLEXITY_SCORES=${COMPLEXITY_SCORES:-"${BASE_DIR}/data/laion_coco_100k_metadata/complexity_scores.json"}
+# Optional: precomputed ICC complexity scores for analysis/logging only.
+# If not provided (or missing), evaluation proceeds normally and ICC routing is still computed on-the-fly.
+COMPLEXITY_SCORES=${COMPLEXITY_SCORES:-""}
 ICC_CHECKPOINT=${ICC_CHECKPOINT:-"${BASE_DIR}/data/ICC.pt"}
 
 # Category label paths (external; provide files if you want category metrics)
@@ -43,13 +45,17 @@ run_eval() {
     # Baseline (full path) evaluation
     if [ -f "${baseline_checkpoint}" ]; then
         echo "\n[Baseline] ${dataset} + LAION-COCO (instance + category)"
+        EXTRA_ARGS=()
+        if [ -f "${COMPLEXITY_SCORES}" ]; then
+            EXTRA_ARGS+=(--complexity-scores "${COMPLEXITY_SCORES}")
+        fi
         python "${BASE_DIR}/scripts/evaluate_mixed_preprocessed.py" \
             --config "${BASE_DIR}/icar/configs/coco.yaml" \
             --checkpoint "${baseline_checkpoint}" \
             --base-dataset "${dataset}" \
             --base-data-root "${base_root}" \
             --laion-data-root "${LAION_ROOT}" \
-            --complexity-scores "${COMPLEXITY_SCORES}" \
+            "${EXTRA_ARGS[@]}" \
             --batch-size 512 \
             --output-dir "${dataset_results_dir}/baseline" \
             --output-file "baseline_${TIMESTAMP}.json" \
@@ -71,13 +77,17 @@ run_eval() {
         fi
 
         echo "\n[ICC-Routed] Layer ${layer} on ${dataset} + LAION-COCO (instance + category)"
+        EXTRA_ARGS=()
+        if [ -f "${COMPLEXITY_SCORES}" ]; then
+            EXTRA_ARGS+=(--complexity-scores "${COMPLEXITY_SCORES}")
+        fi
         python "${BASE_DIR}/scripts/evaluate_mixed_preprocessed.py" \
             --config "${BASE_DIR}/icar/configs/coco.yaml" \
             --checkpoint "${checkpoint_path}" \
             --base-dataset "${dataset}" \
             --base-data-root "${base_root}" \
             --laion-data-root "${LAION_ROOT}" \
-            --complexity-scores "${COMPLEXITY_SCORES}" \
+            "${EXTRA_ARGS[@]}" \
             --early-exit-layer "${layer}" \
             --use-icc-routing \
             --icc-checkpoint "${ICC_CHECKPOINT}" \
