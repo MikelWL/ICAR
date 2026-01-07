@@ -13,6 +13,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from icc.data.datamodule import ICCDataModule
 from icc.export import export_ckpt_to_icc_pt
 from icc.lit import ICCLightningModule
+from icc.thresholds import tune_binary_threshold
 
 
 def set_seed(seed: int) -> None:
@@ -83,6 +84,43 @@ def main(args: argparse.Namespace) -> int:
     )
 
     trainer.fit(model, datamodule=datamodule)
+
+    tuned_threshold = None
+    if args.tune_threshold:
+        device = next(model.parameters()).device
+        probs = []
+        targets = []
+        model.eval()
+        for batch in datamodule.val_dataloader():
+            images, batch_targets = batch[:2]
+            images = images.to(device)
+            batch_targets = batch_targets.to(device)
+            logits = model(images)
+            batch_probs = torch.softmax(logits, dim=1)[:, 1]
+            probs.append(batch_probs.detach().cpu())
+            targets.append(batch_targets.detach().cpu())
+
+        if probs:
+            probs_pos = torch.cat(probs, dim=0)
+            targets_pos = torch.cat(targets, dim=0)
+            result = tune_binary_threshold(
+                probs_pos,
+                targets_pos,
+                metric=args.threshold_metric,
+                thresholds=torch.linspace(0.0, 1.0, int(args.threshold_grid_steps)),
+            )
+            tuned_threshold = float(result.best_threshold)
+            (output_dir / "threshold_tuning.json").write_text(
+                json.dumps(
+                    {
+                        "metric": result.metric,
+                        "best_threshold": result.best_threshold,
+                        "best_metric_value": result.best_metric_value,
+                    },
+                    indent=2,
+                )
+            )
+
     trainer.test(model=model, datamodule=datamodule)
 
     final_ckpt = checkpoints_dir / "final_tested.ckpt"
@@ -103,6 +141,7 @@ def main(args: argparse.Namespace) -> int:
         str(final_ckpt),
         str(export_path),
         model_architecture=args.model_name,
+        threshold=tuned_threshold,
     )
 
     print(f"Wrote Lightning checkpoint: {final_ckpt}")
@@ -150,6 +189,40 @@ if __name__ == "__main__":
     p.add_argument("--val_split", type=float, default=0.15)
     p.add_argument("--test_split", type=float, default=0.15)
     p.add_argument("--seed", type=int, default=42)
+    if hasattr(argparse, "BooleanOptionalAction"):
+        p.add_argument(
+            "--tune_threshold",
+            action=argparse.BooleanOptionalAction,
+            default=True,
+            help="Tune and embed a default probability threshold using the val split.",
+        )
+    else:  # pragma: no cover
+        group = p.add_mutually_exclusive_group()
+        group.add_argument(
+            "--tune_threshold",
+            action="store_true",
+            default=True,
+            help="Tune and embed a default probability threshold using the val split.",
+        )
+        group.add_argument(
+            "--no_tune_threshold",
+            dest="tune_threshold",
+            action="store_false",
+            help="Disable threshold tuning.",
+        )
+    p.add_argument(
+        "--threshold_metric",
+        type=str,
+        default="f1",
+        choices=["f1", "balanced_accuracy", "accuracy", "youden_j"],
+        help="Metric to maximize when tuning the threshold on the val split.",
+    )
+    p.add_argument(
+        "--threshold_grid_steps",
+        type=int,
+        default=1001,
+        help="Number of threshold values in [0,1] to scan (default: 1001).",
+    )
 
     if hasattr(argparse, "BooleanOptionalAction"):
         p.add_argument(

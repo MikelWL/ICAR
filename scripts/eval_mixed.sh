@@ -91,7 +91,6 @@ run_eval() {
             --early-exit-layer "${layer}" \
             --use-icc-routing \
             --icc-checkpoint "${ICC_CHECKPOINT}" \
-            --icc-threshold 0.5 \
             --batch-size 512 \
             --output-dir "${dataset_results_dir}/layer_${layer}" \
             --output-file "icc_routing_${TIMESTAMP}.json" \

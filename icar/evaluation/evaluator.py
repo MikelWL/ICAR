@@ -27,7 +27,7 @@ class ICARInferenceWrapper(nn.Module):
         self,
         icar_model: ICARModel,
         icc_model: ConvNeXtICC,
-        icc_threshold: float = 0.5,
+        icc_threshold: Optional[float] = None,
         device: torch.device = torch.device('cpu')
     ):
         """
@@ -42,7 +42,11 @@ class ICARInferenceWrapper(nn.Module):
         super().__init__()
         self.icar_model = icar_model.to(device)
         self.icc_model = icc_model.to(device).eval()
-        self.icc_threshold = icc_threshold
+        self.icc_threshold = (
+            float(icc_threshold)
+            if icc_threshold is not None
+            else float(getattr(icc_model, "default_threshold", 0.5))
+        )
         self.device = device
         
         # Initialize routing statistics
@@ -411,7 +415,7 @@ class ICAREvaluator:
         icar_model: ICARModel,
         icc_model: ConvNeXtICC,
         dataloader: DataLoader,
-        icc_threshold: float = 0.5
+        icc_threshold: Optional[float] = None
     ) -> Dict[str, Dict[str, float]]:
         """
         Evaluate both adaptive and baseline models.

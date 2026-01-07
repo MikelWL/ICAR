@@ -38,6 +38,7 @@ def export_ckpt_to_icc_pt(
     out_path: str,
     *,
     model_architecture: Optional[str] = None,
+    threshold: Optional[float] = None,
 ) -> str:
     """
     Convert a Lightning `.ckpt` into ICAR-compatible `ICC.pt`.
@@ -75,6 +76,8 @@ def export_ckpt_to_icc_pt(
         linear_w = state_dict.get("classifier.1.weight")
         if linear_w is not None:
             hparams["feature_dim"] = int(linear_w.shape[1])
+    if threshold is not None:
+        hparams["threshold"] = float(threshold)
 
     out_obj = {
         "state_dict": state_dict,
@@ -93,6 +96,12 @@ def main():
     parser.add_argument("--ckpt", required=True, type=str, help="Path to Lightning .ckpt")
     parser.add_argument("--out", required=True, type=str, help="Output ICC.pt path")
     parser.add_argument(
+        "--threshold",
+        default="",
+        type=str,
+        help="Optional positive-class threshold to embed in `hparams.threshold` (float).",
+    )
+    parser.add_argument(
         "--model_architecture",
         default="",
         type=str,
@@ -101,7 +110,11 @@ def main():
     args = parser.parse_args()
 
     model_arch = args.model_architecture.strip() or None
-    export_ckpt_to_icc_pt(args.ckpt, args.out, model_architecture=model_arch)
+    threshold = args.threshold.strip()
+    threshold_value = float(threshold) if threshold else None
+    export_ckpt_to_icc_pt(
+        args.ckpt, args.out, model_architecture=model_arch, threshold=threshold_value
+    )
 
 
 if __name__ == "__main__":

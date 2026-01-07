@@ -32,6 +32,7 @@ class ConvNeXtICC(nn.Module):
         self.model_name = 'convnextv2_tiny.fcmae_ft_in22k_in1k'
         self.num_classes = 2
         self.feature_dim = 768  # ConvNeXt-Tiny feature dimension
+        self.default_threshold = 0.5
         
         # Create the backbone (without pretrained weights if loading from checkpoint)
         self.backbone = timm.create_model(
@@ -62,6 +63,11 @@ class ConvNeXtICC(nn.Module):
                 self.model_name = checkpoint['hparams'].get('model_name', self.model_name)
                 self.num_classes = checkpoint['hparams'].get('num_classes', self.num_classes)
                 self.feature_dim = checkpoint['hparams'].get('feature_dim', self.feature_dim)
+                if 'threshold' in checkpoint['hparams']:
+                    try:
+                        self.default_threshold = float(checkpoint['hparams']['threshold'])
+                    except Exception:
+                        self.default_threshold = 0.5
         else:
             # Direct state dict format
             state_dict = checkpoint
@@ -87,7 +93,7 @@ class ConvNeXtICC(nn.Module):
     def predict_complexity(
         self, 
         x: torch.Tensor, 
-        threshold: float = 0.5
+        threshold: Optional[float] = None
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Predict complexity with binary decision and probability scores.
         
@@ -105,6 +111,7 @@ class ConvNeXtICC(nn.Module):
             logits = self(x)
             probs = F.softmax(logits, dim=1)
             complex_prob = probs[:, 1]  # Probability of complex class
-            is_complex = complex_prob > threshold
+            t = self.default_threshold if threshold is None else float(threshold)
+            is_complex = complex_prob > t
             
         return is_complex, complex_prob

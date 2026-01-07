@@ -27,6 +27,7 @@ class ConvNeXtICC(nn.Module):
         super().__init__()
         self.model_name = model_name
         self.num_classes = num_classes
+        self.default_threshold = 0.5
 
         try:
             import timm  # local import: keep inference import surface minimal
@@ -52,6 +53,21 @@ class ConvNeXtICC(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         features = self.backbone(x)
         return self.classifier(features)
+
+    @torch.no_grad()
+    def predict_complexity(
+        self, x: torch.Tensor, threshold: Optional[float] = None
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Returns:
+            is_complex: bool tensor [B]
+            complex_prob: float tensor [B]
+        """
+        logits = self(x)
+        probs = torch.softmax(logits, dim=1)
+        complex_prob = probs[:, 1]
+        t = self.default_threshold if threshold is None else float(threshold)
+        return complex_prob > t, complex_prob
 
     @staticmethod
     def infer_hparams_from_state_dict(state_dict: Dict[str, torch.Tensor]) -> ICCHParams:
@@ -131,9 +147,13 @@ def load_icc_checkpoint(
 
     model = ConvNeXtICC(model_name=model_name, num_classes=num_classes, pretrained=False)
     model.load_state_dict(state_dict, strict=strict)
+    if isinstance(hparams, dict) and "threshold" in hparams:
+        try:
+            model.default_threshold = float(hparams["threshold"])
+        except Exception:
+            model.default_threshold = 0.5
 
     if device is not None:
         model = model.to(device)
     model.eval()
     return model, metadata
-

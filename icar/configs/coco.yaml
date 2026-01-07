@@ -15,7 +15,8 @@ model:
   
   # Image Complexity Classifier
   icc_checkpoint: "./data/ICC.pt"  # Path to ICC checkpoint
-  icc_threshold: 0.5    # Threshold for complexity classification
+  # If null, prefer `hparams.threshold` embedded in `ICC.pt` (else fallback to 0.5).
+  icc_threshold: null
 
 training:
   # Optimizer settings

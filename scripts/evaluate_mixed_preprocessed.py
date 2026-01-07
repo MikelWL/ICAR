@@ -94,6 +94,7 @@ class ConvNeXtICC(nn.Module):
     def __init__(self, checkpoint_path: str):
         super().__init__()
         import timm
+        self.default_threshold = 0.5
         
         # Create model architecture
         self.backbone = timm.create_model(
@@ -111,7 +112,13 @@ class ConvNeXtICC(nn.Module):
         
         # Load weights
         checkpoint = torch.load(checkpoint_path, map_location='cpu')
-        state_dict = checkpoint['state_dict'] if 'state_dict' in checkpoint else checkpoint
+        if isinstance(checkpoint, dict) and 'hparams' in checkpoint and isinstance(checkpoint['hparams'], dict):
+            if 'threshold' in checkpoint['hparams']:
+                try:
+                    self.default_threshold = float(checkpoint['hparams']['threshold'])
+                except Exception:
+                    self.default_threshold = 0.5
+        state_dict = checkpoint['state_dict'] if isinstance(checkpoint, dict) and 'state_dict' in checkpoint else checkpoint
         
         # Handle PyTorch Lightning state dict format
         new_state_dict = {}
@@ -127,23 +134,28 @@ class ConvNeXtICC(nn.Module):
         return self.classifier(features)
     
     @torch.no_grad()
-    def predict_complexity(self, x, threshold=0.5):
+    def predict_complexity(self, x, threshold=None):
         """Returns both binary prediction and probability score."""
         logits = self(x)
         probs = F.softmax(logits, dim=1)
         complex_prob = probs[:, 1]
-        is_complex = complex_prob > threshold
+        t = self.default_threshold if threshold is None else float(threshold)
+        is_complex = complex_prob > t
         return is_complex, complex_prob
 
 
 class ICCRoutedModel(nn.Module):
     """Wrapper that adds ICC routing to a ICAR model."""
     def __init__(self, icar_model: ICARModel, icc_model: ConvNeXtICC, 
-                 icc_threshold: float = 0.5, device: str = 'cuda'):
+                 icc_threshold: Optional[float] = None, device: str = 'cuda'):
         super().__init__()
         self.icar_model = icar_model
         self.icc_model = icc_model.to(device)
-        self.icc_threshold = icc_threshold
+        self.icc_threshold = (
+            float(icc_threshold)
+            if icc_threshold is not None
+            else float(getattr(icc_model, "default_threshold", 0.5))
+        )
         self.device = device
         
         # Normalization transforms
@@ -167,8 +179,7 @@ class ICCRoutedModel(nn.Module):
         
         # Get complexity predictions
         with torch.no_grad():
-            _, complex_probs = self.icc_model.predict_complexity(icc_images, self.icc_threshold)
-            is_complex = complex_probs > self.icc_threshold
+            is_complex, complex_probs = self.icc_model.predict_complexity(icc_images, self.icc_threshold)
         
         # Initialize output tensor
         embeddings = torch.zeros(batch_size, 768, device=self.device)
@@ -561,8 +572,12 @@ def main():
                       help="Use ICC for complexity-based routing")
     parser.add_argument("--icc-checkpoint", type=str, default="./data/ICC.pt",
                       help="Path to ICC checkpoint")
-    parser.add_argument("--icc-threshold", type=float, default=0.5,
-                      help="ICC complexity threshold")
+    parser.add_argument(
+        "--icc-threshold",
+        type=float,
+        default=None,
+        help="ICC complexity threshold (default: use checkpoint threshold if present, else 0.5)",
+    )
     
     # Forced early exit
     parser.add_argument("--force-early-exit", action="store_true",

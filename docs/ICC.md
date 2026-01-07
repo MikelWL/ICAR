@@ -2,6 +2,20 @@
 
 ICAR uses an **Image Complexity Classifier (ICC)** to decide whether an image is routed through an early-exit or full compute path during evaluation.
 
+### Threshold selection (val-calibrated default)
+
+When training ICC via `python -m icc.train`, the script will (by default) tune a probability threshold on the **val split** (metric configurable) and embed it into the exported `ICC.pt` under `hparams.threshold`. Evaluation scripts use this embedded threshold by default when `--icc-threshold` is not provided.
+
+### Training ICC on LAION-COCO ICC labels (3021 subset)
+
+The released ICC labels are a **subset** of the LAION-COCO 100k distractors (3021 URL-keyed labels; includes some `-1` rejected samples which ICC training drops by default).
+
+Canonical workflow:
+- Run `scripts/materialize_laion_subset_from_img2dataset.py` with `--icc-annotations-by-url ...`; it will produce `annotations_icc_local.json` aligned to the materialized `images/` folder.
+
+If you already have a dataset JSON with `images[*].laion_metadata.url` and local `images[*].filename`, you can remap URL-keyed labels to filename-keyed labels with:
+- `python scripts/remap_icc_annotations_to_local.py --annotations-by-url data/laion_coco_100k/annotations_icc_in_laion_coco_100k_by_url.json --dataset-json /path/to/dataset_laion_coco_100k.json --out /path/to/annotations_icc_local.json`
+
 ### Using the released `ICC.pt`
 
 If you just want to reproduce ICAR results, download `ICC.pt` from:
@@ -60,4 +74,3 @@ python -m icc.export \
   --ckpt /path/to/final_tested.ckpt \
   --out ICC.pt
 ```
-
